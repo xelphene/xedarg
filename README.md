@@ -64,6 +64,7 @@ func1({boolArg:true, intArg:2});
 
 func1({boolArg:true, intArg:3});
 // Exception: Invalid combination of values for boolArg, intArg per reject rule "boolArg=T intA
+```
 
 ## Defaults
 
