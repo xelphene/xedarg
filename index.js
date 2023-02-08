@@ -223,40 +223,44 @@ function wrap(origFunc, opts)
         a = validate(a, argSpec);
         return origFunc(a);
     }
-    
-    if( opts.addPropsOnWrapper )
-        var api = wrapperFunc;
-    else {
-        wrapperFunc[xedarg] = {};
-        var api = wrapperFunc[xedarg];
-    }
 
-    api.getDefaults = () => argSpec.getDefaults();
+    function addAPI(api)
+    {
+        api.getDefaults = () => argSpec.getDefaults();
     
-    Object.defineProperty(api, 'args', {
-        set: s  => argSpec.args = s,
-        get: () => argSpec.args,
-    });
+        Object.defineProperty(api, 'args', {
+            set: s  => argSpec.args = s,
+            get: () => argSpec.args,
+            enumerable: true,
+        });
     
-    Object.defineProperty(api, 'rejects', {
-        set: s  => argSpec.rejects = s,
-        get: () => argSpec.rejects,
-    });
+        Object.defineProperty(api, 'rejects', {
+            set: s  => argSpec.rejects = s,
+            get: () => argSpec.rejects,
+            enumerable: true,
+        });
     
-    api.iterMapValid = function * () {
-        for( let a of argSpec.permuteValidArgs() ) {
-            yield wrapperFunc(a);
+        api.iterMapValid = function * () {
+            for( let a of argSpec.permuteValidArgs() ) {
+                yield wrapperFunc(a);
+            }
+        }
+    
+        api.permuteValidArgs = function * () {
+            for( let a of argSpec.permuteValidArgs() )
+                yield a;
+        }
+    
+        api.countValidArgs = function () {
+            return argSpec.countValidArgs();
         }
     }
     
-    api.permuteValidArgs = function * () {
-        for( let a of argSpec.permuteValidArgs() )
-            yield a;
-    }
-    
-    api.countValidArgs = function () {
-        return argSpec.countValidArgs();
-    }
+    if( opts.addPropsOnWrapper )
+        addAPI(wrapperFunc);
+
+    wrapperFunc[xedarg] = {};
+    addAPI(wrapperFunc[xedarg]);
     
     return wrapperFunc;
 }
